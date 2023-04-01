@@ -143,6 +143,14 @@ Prox_Explode(edict_t *ent)
 	{
 		return;
 	}
+	
+	int var_prox_damage = 90;
+	int var_prox_damage_radius = 192;
+	if (sv_custom_settings->value)
+	{
+		var_prox_damage = cs_prox_damage->value;
+		var_prox_damage_radius = cs_prox_damage_radius->value;
+	}
 
 	/* free the trigger field */
 	if (ent->teamchain && (ent->teamchain->owner == ent))
@@ -159,17 +167,17 @@ Prox_Explode(edict_t *ent)
 	}
 
 	/* play double/quad sound if appopriate */
-	if (ent->dmg >= (PROX_DAMAGE * 4))
+	if (ent->dmg >= (var_prox_damage * 4))
 	{
 		gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage3.wav"), 1, ATTN_NORM, 0);
 	}
-	else if (ent->dmg == (PROX_DAMAGE * 2))
+	else if (ent->dmg == (var_prox_damage * 2))
 	{
 		gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/ddamage3.wav"), 1, ATTN_NORM, 0);
 	}
 
 	ent->takedamage = DAMAGE_NO;
-	T_RadiusDamage(ent, owner, ent->dmg, ent, PROX_DAMAGE_RADIUS, MOD_PROX);
+	T_RadiusDamage(ent, owner, ent->dmg, ent, var_prox_damage_radius, MOD_PROX);
 
 	VectorMA(ent->s.origin, -0.02, ent->velocity, origin);
 	gi.WriteByte(svc_temp_entity);
@@ -226,6 +234,12 @@ Prox_Field_Touch(edict_t *ent, edict_t *other, cplane_t *plane /* unused */,
 	{
 		return;
 	}
+	
+	float var_prox_time_delay = 0.5;
+	if (sv_custom_settings->value)
+	{
+		var_prox_time_delay = cs_prox_time_delay->value;
+	}
 
 	/* trigger the prox mine if it's still there, and still mine. */
 	prox = ent->owner;
@@ -244,7 +258,7 @@ Prox_Field_Touch(edict_t *ent, edict_t *other, cplane_t *plane /* unused */,
 	{
 		gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/proxwarn.wav"), 1, ATTN_NORM, 0);
 		prox->think = Prox_Explode;
-		prox->nextthink = level.time + PROX_TIME_DELAY;
+		prox->nextthink = level.time + var_prox_time_delay;
 		return;
 	}
 
@@ -287,6 +301,16 @@ prox_open(edict_t *ent)
 	{
 		return;
 	}
+	
+	int var_prox_damage_radius = 192;
+	int var_prox_damage = 90;
+	int var_prox_time_to_live = 45;
+	if (sv_custom_settings->value)
+	{
+		var_prox_damage_radius = cs_prox_damage_radius->value;
+		var_prox_damage = cs_prox_damage->value;
+		var_prox_time_to_live = cs_prox_time_to_live->value;
+	}
 
 	search = NULL;
 
@@ -303,7 +327,7 @@ prox_open(edict_t *ent)
 			ent->teamchain->touch = Prox_Field_Touch;
 		}
 
-		while ((search = findradius(search, ent->s.origin, PROX_DAMAGE_RADIUS + 10)) != NULL)
+		while ((search = findradius(search, ent->s.origin, var_prox_damage_radius + 10)) != NULL)
 		{
 			if (!search->classname) /* tag token and other weird shit */
 			{
@@ -329,14 +353,14 @@ prox_open(edict_t *ent)
 
 		if (strong_mines && (strong_mines->value))
 		{
-			ent->wait = level.time + PROX_TIME_TO_LIVE;
+			ent->wait = level.time + var_prox_time_to_live;
 		}
 		else
 		{
-			switch (ent->dmg / PROX_DAMAGE)
+			switch (ent->dmg / var_prox_damage)
 			{
 				case 1:
-					ent->wait = level.time + PROX_TIME_TO_LIVE;
+					ent->wait = level.time + var_prox_time_to_live;
 					break;
 				case 2:
 					ent->wait = level.time + 30;
@@ -348,7 +372,7 @@ prox_open(edict_t *ent)
 					ent->wait = level.time + 10;
 					break;
 				default:
-					ent->wait = level.time + PROX_TIME_TO_LIVE;
+					ent->wait = level.time + var_prox_time_to_live;
 					break;
 			}
 		}
@@ -383,6 +407,14 @@ prox_land(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 	if (!ent || !other)
 	{
 		return;
+	}
+	
+	int var_prox_bound_size = 96;
+	int var_prox_health = 20;
+	if (sv_custom_settings->value)
+	{
+		var_prox_bound_size = cs_prox_bound_size->value;
+		var_prox_health = cs_prox_health->value;
 	}
 
 	/* must turn off owner so owner can shoot it and set it off
@@ -489,8 +521,8 @@ prox_land(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 	VectorCopy(ent->s.origin, field->s.origin);
 	VectorClear(field->velocity);
 	VectorClear(field->avelocity);
-	VectorSet(field->mins, -PROX_BOUND_SIZE, -PROX_BOUND_SIZE, -PROX_BOUND_SIZE);
-	VectorSet(field->maxs, PROX_BOUND_SIZE, PROX_BOUND_SIZE, PROX_BOUND_SIZE);
+	VectorSet(field->mins, -var_prox_bound_size, -var_prox_bound_size, -var_prox_bound_size);
+	VectorSet(field->maxs, var_prox_bound_size, var_prox_bound_size, var_prox_bound_size);
 	field->movetype = MOVETYPE_NONE;
 	field->solid = SOLID_TRIGGER;
 	field->owner = ent;
@@ -508,7 +540,7 @@ prox_land(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 	ent->movetype = movetype; /* either bounce or none, depending on whether we stuck to something */
 	ent->die = prox_die;
 	ent->teamchain = field;
-	ent->health = PROX_HEALTH;
+	ent->health = var_prox_health;
 	ent->nextthink = level.time + 0.05;
 	ent->think = prox_open;
 	ent->touch = NULL;
@@ -528,6 +560,14 @@ fire_prox(edict_t *self, vec3_t start, vec3_t aimdir, int damage_multiplier, int
 	if (!self)
 	{
 		return;
+	}
+	
+	int var_prox_damage = 90;
+	int var_prox_time_to_live = 45;
+	if (sv_custom_settings->value)
+	{
+		var_prox_damage = cs_prox_damage->value;
+		var_prox_time_to_live = cs_prox_time_to_live->value;
 	}
 
 	vectoangles2(aimdir, dir);
@@ -552,7 +592,7 @@ fire_prox(edict_t *self, vec3_t start, vec3_t aimdir, int damage_multiplier, int
 	prox->teammaster = self;
 	prox->touch = prox_land;
 	prox->think = Prox_Explode;
-	prox->dmg = PROX_DAMAGE * damage_multiplier;
+	prox->dmg = var_prox_damage * damage_multiplier;
 	prox->classname = "prox";
 	prox->svflags |= SVF_DAMAGEABLE;
 	prox->flags |= FL_MECHANICAL;
@@ -560,7 +600,7 @@ fire_prox(edict_t *self, vec3_t start, vec3_t aimdir, int damage_multiplier, int
 	switch (damage_multiplier)
 	{
 		case 1:
-			prox->nextthink = level.time + PROX_TIME_TO_LIVE;
+			prox->nextthink = level.time + var_prox_time_to_live;
 			break;
 		case 2:
 			prox->nextthink = level.time + 30;
@@ -572,7 +612,7 @@ fire_prox(edict_t *self, vec3_t start, vec3_t aimdir, int damage_multiplier, int
 			prox->nextthink = level.time + 10;
 			break;
 		default:
-			prox->nextthink = level.time + PROX_TIME_TO_LIVE;
+			prox->nextthink = level.time + var_prox_time_to_live;
 			break;
 	}
 
@@ -709,6 +749,16 @@ Nuke_Explode(edict_t *ent)
 	{
 		return;
 	}
+	
+	int var_nuke_damage = 400;
+	int var_nuke_quake_strength = 100;
+	int var_nuke_quake_time = 3;
+	if (sv_custom_settings->value)
+	{
+		var_nuke_damage = cs_nuke_damage->value;
+		var_nuke_quake_strength = cs_nuke_quake_strength->value;
+		var_nuke_quake_time = cs_nuke_quake_time->value;	
+	}
 
 	if (ent->teammaster->client)
 	{
@@ -718,11 +768,11 @@ Nuke_Explode(edict_t *ent)
 	T_RadiusNukeDamage(ent, ent->teammaster, ent->dmg,
 			ent, ent->dmg_radius, MOD_NUKE);
 
-	if (ent->dmg >= (NUKE_DAMAGE * 4))
+	if (ent->dmg >= (var_nuke_damage * 4))
 	{
 		gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage3.wav"), 1, ATTN_NORM, 0);
 	}
-	else if (ent->dmg == (NUKE_DAMAGE * 2))
+	else if (ent->dmg == (var_nuke_damage * 2))
 	{
 		gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/ddamage3.wav"), 1, ATTN_NORM, 0);
 	}
@@ -743,8 +793,8 @@ Nuke_Explode(edict_t *ent)
 	ent->svflags |= SVF_NOCLIENT;
 	ent->noise_index = gi.soundindex("world/rumble.wav");
 	ent->think = Nuke_Quake;
-	ent->speed = NUKE_QUAKE_STRENGTH;
-	ent->timestamp = level.time + NUKE_QUAKE_TIME;
+	ent->speed = var_nuke_quake_strength;
+	ent->timestamp = level.time + var_nuke_quake_time;
 	ent->nextthink = level.time + FRAMETIME;
 	ent->last_move_time = 0;
 }
@@ -779,8 +829,16 @@ Nuke_Think(edict_t *ent)
 	{
 		return;
 	}
+	
+	int var_nuke_damage = 400;
+	int var_nuke_time_to_live = 6;
+	if (sv_custom_settings->value)
+	{
+		var_nuke_damage = cs_nuke_damage->value;
+		var_nuke_time_to_live = cs_nuke_time_to_live->value;	
+	}
 
-	damage_multiplier = ent->dmg / NUKE_DAMAGE;
+	damage_multiplier = ent->dmg / var_nuke_damage;
 
 	switch (damage_multiplier)
 	{
@@ -810,7 +868,7 @@ Nuke_Think(edict_t *ent)
 	{
 		Nuke_Explode(ent);
 	}
-	else if (level.time >= (ent->wait - NUKE_TIME_TO_LIVE))
+	else if (level.time >= (ent->wait - var_nuke_time_to_live))
 	{
 		ent->s.frame++;
 
@@ -837,7 +895,7 @@ Nuke_Think(edict_t *ent)
 
 		if (ent->timestamp <= level.time)
 		{
-			if ((ent->wait - level.time) <= (NUKE_TIME_TO_LIVE / 2.0))
+			if ((ent->wait - level.time) <= (var_nuke_time_to_live / 2.0))
 			{
 				gi.sound(ent, CHAN_NO_PHS_ADD + CHAN_VOICE, gi.soundindex("weapons/nukewarn2.wav"), 1, attenuation, 0);
 				ent->timestamp = level.time + 0.3;
@@ -892,6 +950,18 @@ fire_nuke(edict_t *self, vec3_t start, vec3_t aimdir, int speed)
 	{
 		return;
 	}
+	
+	int var_nuke_delay = 4;
+	int var_nuke_time_to_live = 6;
+	int var_nuke_damage = 400;
+	int var_nuke_radius = 512;
+	if (sv_custom_settings->value)
+	{
+		var_nuke_delay = cs_nuke_delay->value;
+		var_nuke_time_to_live = cs_nuke_time_to_live->value;
+		var_nuke_damage = cs_nuke_damage->value;
+		var_nuke_radius = cs_nuke_radius->value;
+	}
 
 	damage_modifier = (int)P_DamageModifier(self);
 
@@ -917,22 +987,22 @@ fire_nuke(edict_t *self, vec3_t start, vec3_t aimdir, int speed)
 	nuke->owner = self;
 	nuke->teammaster = self;
 	nuke->nextthink = level.time + FRAMETIME;
-	nuke->wait = level.time + NUKE_DELAY + NUKE_TIME_TO_LIVE;
+	nuke->wait = level.time + var_nuke_delay + var_nuke_time_to_live;
 	nuke->think = Nuke_Think;
 	nuke->touch = nuke_bounce;
 
 	nuke->health = 10000;
 	nuke->takedamage = DAMAGE_YES;
 	nuke->svflags |= SVF_DAMAGEABLE;
-	nuke->dmg = NUKE_DAMAGE * damage_modifier;
+	nuke->dmg = var_nuke_damage * damage_modifier;
 
 	if (damage_modifier == 1)
 	{
-		nuke->dmg_radius = NUKE_RADIUS;
+		nuke->dmg_radius = var_nuke_radius;
 	}
 	else
 	{
-		nuke->dmg_radius = NUKE_RADIUS + NUKE_RADIUS * (0.25 * (float)damage_modifier);
+		nuke->dmg_radius = var_nuke_radius + var_nuke_radius * (0.25 * (float)damage_modifier);
 	}
 
 	nuke->classname = "nuke";
@@ -948,6 +1018,14 @@ tesla_remove(edict_t *self)
 	if (!self)
 	{
 		return;
+	}
+	
+	int var_tesla_damage = 3;
+	int var_tesla_explosion_damage_mult = 50;
+	if (sv_custom_settings->value)
+	{
+		var_tesla_damage = cs_tesla_damage->value;
+		var_tesla_explosion_damage_mult = cs_tesla_explosion_damage_mult->value;
 	}
 
 	self->takedamage = DAMAGE_NO;
@@ -974,11 +1052,11 @@ tesla_remove(edict_t *self)
 	/* play double/quad sound if doubled/quadded and an underwater explosion */
 	if (self->dmg_radius)
 	{
-		if (self->dmg >= (TESLA_DAMAGE * TESLA_EXPLOSION_DAMAGE_MULT * 4))
+		if (self->dmg >= (var_tesla_damage * var_tesla_explosion_damage_mult * 4))
 		{
 			gi.sound(self, CHAN_ITEM, gi.soundindex("items/damage3.wav"), 1, ATTN_NORM, 0);
 		}
-		else if (self->dmg == (TESLA_DAMAGE * TESLA_EXPLOSION_DAMAGE_MULT * 2))
+		else if (self->dmg == (var_tesla_damage * var_tesla_explosion_damage_mult * 2))
 		{
 			gi.sound(self, CHAN_ITEM, gi.soundindex("misc/ddamage3.wav"), 1, ATTN_NORM, 0);
 		}
@@ -1006,9 +1084,17 @@ tesla_blow(edict_t *self)
 	{
 		return;
 	}
+	
+	int var_tesla_explosion_damage_mult = 50;
+	int var_tesla_explosion_radius = 200;
+	if (sv_custom_settings->value)
+	{
+		var_tesla_explosion_damage_mult = cs_tesla_explosion_damage_mult->value;
+		var_tesla_explosion_radius = cs_tesla_explosion_radius->value;
+	}
 
-	self->dmg = self->dmg * TESLA_EXPLOSION_DAMAGE_MULT;
-	self->dmg_radius = TESLA_EXPLOSION_RADIUS;
+	self->dmg = self->dmg * var_tesla_explosion_damage_mult;
+	self->dmg_radius = var_tesla_explosion_radius;
 	tesla_remove(self);
 }
 
@@ -1034,6 +1120,14 @@ tesla_think_active(edict_t *self)
 	{
 		tesla_remove(self);
 		return;
+	}
+	
+	int var_tesla_damage = 3;
+	int var_tesla_knockback = 8;
+	if (sv_custom_settings->value)
+	{
+		var_tesla_damage = cs_tesla_damage->value;
+		var_tesla_knockback = cs_tesla_knockback->value;
 	}
 
 	VectorCopy(self->s.origin, start);
@@ -1089,11 +1183,11 @@ tesla_think_active(edict_t *self)
 			VectorSubtract(hit->s.origin, start, dir);
 
 			/* play double/quad sound if it's above the "normal" damage */
-			if (self->dmg >= (TESLA_DAMAGE * 4))
+			if (self->dmg >= (var_tesla_damage * 4))
 			{
 				gi.sound(self, CHAN_ITEM, gi.soundindex("items/damage3.wav"), 1, ATTN_NORM, 0);
 			}
-			else if (self->dmg == (TESLA_DAMAGE * 2))
+			else if (self->dmg == (var_tesla_damage * 2))
 			{
 				gi.sound(self, CHAN_ITEM, gi.soundindex("misc/ddamage3.wav"), 1, ATTN_NORM, 0);
 			}
@@ -1108,7 +1202,7 @@ tesla_think_active(edict_t *self)
 			else
 			{
 				T_Damage(hit, self, self->teammaster, dir, tr.endpos, tr.plane.normal,
-						self->dmg, TESLA_KNOCKBACK, 0, MOD_TESLA);
+						self->dmg, var_tesla_knockback, 0, MOD_TESLA);
 			}
 
 			gi.WriteByte(svc_temp_entity);
@@ -1144,13 +1238,21 @@ tesla_activate(edict_t *self)
 		tesla_blow(self);
 		return;
 	}
+	
+	int var_tesla_damage_radius = 128;
+	int var_tesla_time_to_live = 30;
+	if (sv_custom_settings->value)
+	{
+		var_tesla_damage_radius = cs_tesla_damage_radius->value;
+		var_tesla_time_to_live = cs_tesla_time_to_live->value;
+	}
 
 	/* only check for spawn points in deathmatch */
 	if (deathmatch->value)
 	{
 		search = NULL;
 
-		while ((search = findradius(search, self->s.origin, 1.5 * TESLA_DAMAGE_RADIUS)) != NULL)
+		while ((search = findradius(search, self->s.origin, 1.5 * var_tesla_damage_radius)) != NULL)
 		{
 			if (search->classname)
 			{
@@ -1169,8 +1271,8 @@ tesla_activate(edict_t *self)
 
 	trigger = G_Spawn();
 	VectorCopy(self->s.origin, trigger->s.origin);
-	VectorSet(trigger->mins, -TESLA_DAMAGE_RADIUS, -TESLA_DAMAGE_RADIUS, self->mins[2]);
-	VectorSet(trigger->maxs, TESLA_DAMAGE_RADIUS, TESLA_DAMAGE_RADIUS, TESLA_DAMAGE_RADIUS);
+	VectorSet(trigger->mins, -var_tesla_damage_radius, -var_tesla_damage_radius, self->mins[2]);
+	VectorSet(trigger->maxs, var_tesla_damage_radius, var_tesla_damage_radius, var_tesla_damage_radius);
 	trigger->movetype = MOVETYPE_NONE;
 	trigger->solid = SOLID_TRIGGER;
 	trigger->owner = self;
@@ -1191,7 +1293,7 @@ tesla_activate(edict_t *self)
 	self->teamchain = trigger;
 	self->think = tesla_think_active;
 	self->nextthink = level.time + FRAMETIME;
-	self->air_finished = level.time + TESLA_TIME_TO_LIVE;
+	self->air_finished = level.time + var_tesla_time_to_live;
 }
 
 void
@@ -1294,6 +1396,16 @@ fire_tesla(edict_t *self, vec3_t start, vec3_t aimdir,
 	{
 		return;
 	}
+	
+	int var_tesla_time_to_live = 30;
+	int var_tesla_activate_time = 3;
+	int var_tesla_damage = 3;
+	if (sv_custom_settings->value)
+	{
+		var_tesla_time_to_live = cs_tesla_time_to_live->value;
+		var_tesla_activate_time = cs_tesla_activate_time->value;
+		var_tesla_damage = cs_tesla_damage->value;
+	}
 
 	vectoangles2(aimdir, dir);
 	AngleVectors(dir, forward, right, up);
@@ -1315,9 +1427,9 @@ fire_tesla(edict_t *self, vec3_t start, vec3_t aimdir,
 	tesla->owner = self;
 	tesla->teammaster = self;
 
-	tesla->wait = level.time + TESLA_TIME_TO_LIVE;
+	tesla->wait = level.time + var_tesla_time_to_live;
 	tesla->think = tesla_think;
-	tesla->nextthink = level.time + TESLA_ACTIVATE_TIME;
+	tesla->nextthink = level.time + var_tesla_activate_time;
 
 	/* blow up on contact with lava & slime code */
 	tesla->touch = tesla_lava;
@@ -1330,10 +1442,22 @@ fire_tesla(edict_t *self, vec3_t start, vec3_t aimdir,
 	{
 		tesla->health = 30;
 	}
+	
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			tesla->health = cs_tesla_health_mp->value; //20
+		}
+		else
+		{
+			tesla->health = cs_tesla_health_sp->value; //30
+		}
+	}
 
 	tesla->takedamage = DAMAGE_YES;
 	tesla->die = tesla_die;
-	tesla->dmg = TESLA_DAMAGE * damage_multiplier;
+	tesla->dmg = var_tesla_damage * damage_multiplier;
 	tesla->classname = "tesla";
 	tesla->svflags |= SVF_DAMAGEABLE;
 	tesla->clipmask = MASK_SHOT | CONTENTS_SLIME | CONTENTS_LAVA;

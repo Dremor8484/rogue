@@ -966,6 +966,14 @@ bfg_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 	{
 		PlayerNoise(self->owner, self->s.origin, PNOISE_IMPACT);
 	}
+	
+	int weapon_bfg_damage_direct = 200;
+	int weapon_bfg_damage_radius = 200;
+	if (sv_custom_settings->value)
+	{
+		weapon_bfg_damage_direct = cs_weapon_bfg_damage_direct->value;
+		weapon_bfg_damage_radius = cs_weapon_bfg_damage_radius->value;
+	}
 
 	/* core explosion - prevents firing it into the wall/floor */
 	if (other->takedamage)
@@ -973,10 +981,10 @@ bfg_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 		get_normal_vector(plane, normal);
 
 		T_Damage(other, self, self->owner, self->velocity, self->s.origin,
-				normal, 200, 0, 0, MOD_BFG_BLAST);
+				normal, weapon_bfg_damage_direct, 0, 0, MOD_BFG_BLAST); //200
 	}
 
-	T_RadiusDamage(self, self->owner, 200, other, 100, MOD_BFG_BLAST);
+	T_RadiusDamage(self, self->owner, weapon_bfg_damage_radius, other, 100, MOD_BFG_BLAST); //200
 
 	gi.sound(self, CHAN_VOICE, gi.soundindex("weapons/bfg__x1b.wav"), 1, ATTN_NORM, 0);
 	self->solid = SOLID_NOT;
@@ -1013,14 +1021,22 @@ bfg_think(edict_t *self)
 	{
 		return;
 	}
+	
+	int weapon_bfg_damage_laser_sp = 10;
+	int weapon_bfg_damage_laser_mp = 5;
+	if (sv_custom_settings->value)
+	{
+		weapon_bfg_damage_laser_sp = cs_weapon_bfg_damage_laser_sp->value;
+		weapon_bfg_damage_laser_mp = cs_weapon_bfg_damage_laser_mp->value;
+	}
 
 	if (deathmatch->value)
 	{
-		dmg = 5;
+		dmg = weapon_bfg_damage_laser_mp; //5
 	}
 	else
 	{
-		dmg = 10;
+		dmg = weapon_bfg_damage_laser_sp; //10
 	}
 
 	ent = NULL;

@@ -77,6 +77,216 @@ cvar_t *g_disruptor;
 cvar_t *aimfix;
 cvar_t *g_machinegun_norecoil;
 
+cvar_t *sv_custom_settings;
+
+cvar_t *cs_player_health_start;
+cvar_t *cs_player_health_max;
+
+cvar_t *cs_player_ammo_shells;
+cvar_t *cs_player_ammo_bullets;
+cvar_t *cs_player_ammo_grenades;
+cvar_t *cs_player_ammo_rockets;
+cvar_t *cs_player_ammo_slugs;
+cvar_t *cs_player_ammo_cells;
+
+cvar_t *cs_player_ammo_prox;
+cvar_t *cs_player_ammo_tesla;
+cvar_t *cs_player_ammo_flechettes;
+cvar_t *cs_player_ammo_rounds;
+
+cvar_t *cs_bandolier_ammo_shells;
+cvar_t *cs_bandolier_ammo_bullets;
+cvar_t *cs_bandolier_ammo_grenades;
+cvar_t *cs_bandolier_ammo_rockets;
+cvar_t *cs_bandolier_ammo_slugs;
+cvar_t *cs_bandolier_ammo_cells;
+
+cvar_t *cs_bandolier_ammo_flechettes;
+cvar_t *cs_bandolier_ammo_rounds;
+
+cvar_t *cs_ammopack_ammo_shells;
+cvar_t *cs_ammopack_ammo_bullets;
+cvar_t *cs_ammopack_ammo_grenades;
+cvar_t *cs_ammopack_ammo_rockets;
+cvar_t *cs_ammopack_ammo_slugs;
+cvar_t *cs_ammopack_ammo_cells;
+
+cvar_t *cs_ammopack_ammo_flechettes;
+cvar_t *cs_ammopack_ammo_rounds;
+cvar_t *cs_ammopack_ammo_prox;
+cvar_t *cs_ammopack_ammo_tesla;
+
+cvar_t *cs_silencer_shots_quantity;
+cvar_t *cs_quad_duration;
+cvar_t *cs_rebreather_duration;
+cvar_t *cs_environmentsuit_duration;
+cvar_t *cs_invulnerability_duration;
+cvar_t *cs_powerup_quantity_easy;
+cvar_t *cs_powerup_quantity_medium;
+cvar_t *cs_powerup_quantity_hard;
+cvar_t *cs_powerup_quantity_hardplus;
+
+cvar_t *cs_IR_duration;
+cvar_t *cs_double_duration;
+
+cvar_t *cs_health_small_val;
+cvar_t *cs_health_val;
+cvar_t *cs_health_large_val;
+cvar_t *cs_health_mega_val;
+cvar_t *cs_health_mega_decay;
+cvar_t *cs_adrenaline_val;
+cvar_t *cs_adrenaline_heal;
+cvar_t *cs_ancienthead_val;
+cvar_t *cs_ancienthead_heal;
+cvar_t *cs_player_health_cap;
+cvar_t *cs_player_health_force_max;
+
+cvar_t *cs_armor_shard_val;
+cvar_t *cs_armor_jacket_val;
+cvar_t *cs_armor_combat_val;
+cvar_t *cs_armor_body_val;
+cvar_t *cs_armor_jacket_max;
+cvar_t *cs_armor_combat_max;
+cvar_t *cs_armor_body_max;
+cvar_t *cs_armor_jacket_absp;
+cvar_t *cs_armor_combat_absp;
+cvar_t *cs_armor_body_absp;
+cvar_t *cs_armor_jacket_abse;
+cvar_t *cs_armor_combat_abse;
+cvar_t *cs_armor_body_abse;
+cvar_t *cs_player_armor_cap;
+cvar_t *cs_player_armor_force_max;
+
+cvar_t *cs_etf_deplete_cell_mul;
+
+cvar_t *cs_power_armor_screen_dmgxcell;
+cvar_t *cs_power_armor_screen_dmg_mul;
+cvar_t *cs_power_armor_screen_dmg_div;
+cvar_t *cs_power_armor_shield_dmgxcell;
+cvar_t *cs_power_armor_shield_dmg_mul;
+cvar_t *cs_power_armor_shield_dmg_div;
+
+cvar_t *cs_damage_modifier_hardplus;
+cvar_t *cs_damage_modifier_hard;
+cvar_t *cs_damage_modifier_medium;
+cvar_t *cs_damage_modifier_easy;
+cvar_t *cs_damage_sneak_attack;
+
+cvar_t *cs_weapon_blaster_damage_sp;
+cvar_t *cs_weapon_blaster_damage_mp;
+cvar_t *cs_weapon_blaster_speed;
+
+cvar_t *cs_weapon_shotgun_bullets;
+cvar_t *cs_weapon_shotgun_damage;
+cvar_t *cs_weapon_shotgun_kick;
+cvar_t *cs_weapon_shotgun_hspread;
+cvar_t *cs_weapon_shotgun_vspread;
+
+cvar_t *cs_weapon_sshotgun_bullets;
+cvar_t *cs_weapon_sshotgun_damage;
+cvar_t *cs_weapon_sshotgun_kick;
+cvar_t *cs_weapon_sshotgun_hspread;
+cvar_t *cs_weapon_sshotgun_vspread;
+cvar_t *cs_weapon_sshotgun_yaw;
+
+cvar_t *cs_weapon_machinegun_damage;
+cvar_t *cs_weapon_machinegun_kick;
+cvar_t *cs_weapon_machinegun_hspread;
+cvar_t *cs_weapon_machinegun_vspread;
+cvar_t *cs_weapon_machinegun_recoil;
+
+cvar_t *cs_weapon_chaingun_damage_sp;
+cvar_t *cs_weapon_chaingun_damage_mp;
+cvar_t *cs_weapon_chaingun_kick;
+cvar_t *cs_weapon_chaingun_hspread;
+cvar_t *cs_weapon_chaingun_vspread;
+
+cvar_t *cs_weapon_grenade_hand_damage_direct;
+cvar_t *cs_weapon_grenade_hand_damage_radius;
+cvar_t *cs_weapon_grenade_hand_speed_min;
+cvar_t *cs_weapon_grenade_hand_speed_max;
+
+cvar_t *cs_weapon_grenade_launcher_damage_direct;
+cvar_t *cs_weapon_grenade_launcher_damage_radius;
+cvar_t *cs_weapon_grenade_launcher_speed;
+
+cvar_t *cs_weapon_grenade_launcher_damage_direct_p;
+
+cvar_t *cs_weapon_rocket_launcher_damage_direct;
+cvar_t *cs_weapon_rocket_launcher_damage_radius;
+cvar_t *cs_weapon_rocket_launcher_radius;
+cvar_t *cs_weapon_rocket_launcher_speed;
+
+cvar_t *cs_weapon_hblaster_damage_sp;
+cvar_t *cs_weapon_hblaster_damage_mp;
+cvar_t *cs_weapon_hblaster_speed;
+
+cvar_t *cs_weapon_railgun_damage_sp;
+cvar_t *cs_weapon_railgun_damage_mp;
+cvar_t *cs_weapon_railgun_kick_sp;
+cvar_t *cs_weapon_railgun_kick_mp;
+
+cvar_t *cs_weapon_bfg_damage_effect_sp;
+cvar_t *cs_weapon_bfg_damage_effect_mp;
+cvar_t *cs_weapon_bfg_radius;
+cvar_t *cs_weapon_bfg_speed;
+
+cvar_t *cs_weapon_chainfist_damage_sp;
+cvar_t *cs_weapon_chainfist_damage_mp;
+cvar_t *cs_weapon_chainfist_reach;
+
+cvar_t *cs_weapon_disintegrator_damage_sp;
+cvar_t *cs_weapon_disintegrator_damage_mp;
+
+cvar_t *cs_weapon_etf_rifle_damage;
+cvar_t *cs_weapon_etf_rifle_kick;
+cvar_t *cs_weapon_etf_rifle_speed;
+
+cvar_t *cs_weapon_heatbeam_damage_sp;
+cvar_t *cs_weapon_heatbeam_damage_mp;
+cvar_t *cs_weapon_heatbeam_kick_sp;
+cvar_t *cs_weapon_heatbeam_kick_mp;
+
+cvar_t *cs_weapon_bfg_damage_direct;
+cvar_t *cs_weapon_bfg_damage_radius;
+cvar_t *cs_weapon_bfg_damage_laser_sp;
+cvar_t *cs_weapon_bfg_damage_laser_mp;
+
+cvar_t *cs_prox_time_to_live;
+cvar_t *cs_prox_time_delay;
+cvar_t *cs_prox_bound_size;
+cvar_t *cs_prox_damage_radius;
+cvar_t *cs_prox_health;
+cvar_t *cs_prox_damage;
+
+cvar_t *cs_tesla_time_to_live;
+cvar_t *cs_tesla_damage_radius;
+cvar_t *cs_tesla_damage;
+cvar_t *cs_tesla_knockback;
+cvar_t *cs_tesla_activate_time;
+cvar_t *cs_tesla_explosion_damage_mult;
+cvar_t *cs_tesla_explosion_radius;
+cvar_t *cs_tesla_health_sp;
+cvar_t *cs_tesla_health_mp;
+
+cvar_t *cs_nuke_delay;
+cvar_t *cs_nuke_time_to_live;
+cvar_t *cs_nuke_radius;
+cvar_t *cs_nuke_damage;
+cvar_t *cs_nuke_quake_time;
+cvar_t *cs_nuke_quake_strength;
+
+cvar_t *cs_turret_blaster_damage;
+cvar_t *cs_turret_rocket_damage_direct;
+cvar_t *cs_turret_rocket_damage_radius;
+cvar_t *cs_turret_rocket_radius;
+cvar_t *cs_turret_rocket_speed;
+
+cvar_t *cs_monster_turret_blaster_damage;
+cvar_t *cs_monster_turret_machinegun_damage;
+cvar_t *cs_monster_turret_rocket_damage;
+cvar_t *cs_monster_turret_health;
+
 void SpawnEntities(char *mapname, char *entities, char *spawnpoint);
 void ClientThink(edict_t *ent, usercmd_t *cmd);
 qboolean ClientConnect(edict_t *ent, char *userinfo);

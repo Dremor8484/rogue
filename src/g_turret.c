@@ -117,7 +117,18 @@ turret_breach_fire(edict_t *self)
 
 	damage = 100 + random() * 50;
 	speed = 550 + 50 * skill->value;
-	fire_rocket(self->teammaster->owner, start, f, damage, speed, 150, damage);
+	
+	int var_turret_rocket_damage_radius = 150;
+	int var_turret_rocket_radius = 150;
+	if (sv_custom_settings->value)
+	{
+		damage = cs_turret_rocket_damage_direct->value;
+		var_turret_rocket_damage_radius = cs_turret_rocket_damage_radius->value;
+		var_turret_rocket_radius = cs_turret_rocket_radius->value;
+		speed = cs_turret_rocket_speed->value;
+	}
+	
+	fire_rocket(self->teammaster->owner, start, f, damage, speed, var_turret_rocket_radius, var_turret_rocket_damage_radius); //var_turret_rocket_radius was 150, var_turret_rocket_damage_radius was damage
 	gi.positioned_sound(start, self, CHAN_WEAPON, gi.soundindex("weapons/rocklf1a.wav"), 1, ATTN_NORM, 0);
 }
 
@@ -320,6 +331,12 @@ SP_turret_breach(edict_t *self)
 	{
 		return;
 	}
+	
+	int var_turret_blaster_damage = 10;
+	if (sv_custom_settings->value)
+	{
+		var_turret_blaster_damage = cs_turret_blaster_damage->value;
+	}
 
 	self->solid = SOLID_BSP;
 	self->movetype = MOVETYPE_PUSH;
@@ -332,7 +349,7 @@ SP_turret_breach(edict_t *self)
 
 	if (!self->dmg)
 	{
-		self->dmg = 10;
+		self->dmg = var_turret_blaster_damage; //10
 	}
 
 	if (!st.minpitch)

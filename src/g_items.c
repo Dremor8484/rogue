@@ -200,8 +200,24 @@ Pickup_Powerup(edict_t *ent, edict_t *other)
 
 	quantity = other->client->pers.inventory[ITEM_INDEX(ent->item)];
 
+	int iMediumMax = 2;
+	int iHardMax = 1;
+	if (sv_custom_settings->value)
+	{
+		if (((skill->value == SKILL_EASY) && (quantity >= cs_powerup_quantity_easy->value)) || 
+			((skill->value == SKILL_MEDIUM) && (quantity >= cs_powerup_quantity_medium->value)) || 
+			((skill->value == SKILL_HARD) && (quantity >= cs_powerup_quantity_hard->value)) || 
+			((skill->value == SKILL_HARDPLUS) && (quantity >= cs_powerup_quantity_hardplus->value)))
+		{
+			return false;
+		}
+		
+		iMediumMax = cs_powerup_quantity_medium->value;
+		iHardMax = cs_powerup_quantity_hard->value;
+	}
+
 	if (((skill->value == SKILL_MEDIUM) &&
-		 (quantity >= 2)) || ((skill->value >= SKILL_HARD) && (quantity >= 1)))
+		 (quantity >= iMediumMax)) || ((skill->value >= SKILL_HARD) && (quantity >= iHardMax)))
 	{
 		return false;
 	}
@@ -246,14 +262,40 @@ Pickup_Adrenaline(edict_t *ent, edict_t *other)
 		return false;
 	}
 
-	if (!deathmatch->value)
-	{
-		other->max_health += 1;
-	}
 
-	if (other->health < other->max_health)
+	int adrenaline_val = 1;
+	if (sv_custom_settings->value)
 	{
-		other->health = other->max_health;
+		adrenaline_val = cs_adrenaline_val->value; //1
+		
+		other->max_health += adrenaline_val; //1
+		if (cs_player_health_cap->value && other->max_health > cs_player_health_cap->value)
+		{
+			other->max_health = cs_player_health_cap->value;
+		}
+		
+		other->health += adrenaline_val; //1
+		if (cs_player_health_cap->value && other->health > cs_player_health_cap->value)
+		{
+			other->health = cs_player_health_cap->value;
+		}
+		
+		if (other->health < other->max_health && cs_adrenaline_heal->value == 1)
+		{
+			other->health = other->max_health;
+		}
+	}
+	else									   
+	{
+		if (!deathmatch->value)
+		{
+			other->max_health += adrenaline_val; //1
+		}
+		
+		if (other->health < other->max_health)
+		{
+			other->health = other->max_health;
+		}
 	}
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
@@ -272,7 +314,40 @@ Pickup_AncientHead(edict_t *ent, edict_t *other)
 		return false;
 	}
 
-	other->max_health += 2;
+	int ancienthead_val = 2;
+	if (sv_custom_settings->value)
+	{
+		ancienthead_val = cs_ancienthead_val->value; //2
+		
+		other->max_health += ancienthead_val; //2
+		if (cs_player_health_cap->value && other->max_health > cs_player_health_cap->value)
+		{
+			other->max_health = cs_player_health_cap->value;
+		}		
+		
+		other->health += ancienthead_val; //2
+		if (cs_player_health_cap->value && other->health > cs_player_health_cap->value)
+		{
+			other->health = cs_player_health_cap->value;
+		}
+		
+		if (other->health < other->max_health && cs_ancienthead_heal->value == 1)
+		{
+			other->health = other->max_health;
+		}
+	}
+	else
+	{
+		if (!deathmatch->value)
+		{
+			other->max_health += ancienthead_val; //2
+		}
+		
+		//if (other->health < other->max_health)
+		//{
+			//other->health = other->max_health;
+		//}
+	}
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 	{
@@ -323,6 +398,54 @@ Pickup_Bandolier(edict_t *ent, edict_t *other)
 		if (other->client->pers.max_rounds < 150)
 		{
 			other->client->pers.max_rounds = 150;
+		}
+	}
+	
+	if (sv_custom_settings->value)
+	{
+		if (other->client->pers.max_shells < cs_bandolier_ammo_shells->value) //150
+		{
+			other->client->pers.max_shells = cs_bandolier_ammo_shells->value; //150
+		}
+
+		if (other->client->pers.max_bullets < cs_bandolier_ammo_bullets->value) //250
+		{
+			other->client->pers.max_bullets = cs_bandolier_ammo_bullets->value; //250
+		}
+
+		if (other->client->pers.max_grenades < cs_bandolier_ammo_grenades->value) //50
+		{
+			other->client->pers.max_grenades = cs_bandolier_ammo_grenades->value; //50
+		}
+
+		if (other->client->pers.max_rockets < cs_bandolier_ammo_rockets->value) //50
+		{
+			other->client->pers.max_rockets = cs_bandolier_ammo_rockets->value; //50
+		}
+
+						
+  
+		if (other->client->pers.max_slugs < cs_bandolier_ammo_slugs->value) //75
+		{
+			other->client->pers.max_slugs = cs_bandolier_ammo_slugs->value; //75
+		}
+		
+		if (other->client->pers.max_cells < cs_bandolier_ammo_cells->value) //250
+		{
+			other->client->pers.max_cells = cs_bandolier_ammo_cells->value; //250
+		}
+		
+		if (other->client->pers.max_flechettes < cs_bandolier_ammo_flechettes->value) //250
+		{
+			other->client->pers.max_flechettes = cs_bandolier_ammo_flechettes->value; //250
+		}
+
+		if (g_disruptor->value)
+		{
+			if (other->client->pers.max_rounds < cs_bandolier_ammo_rounds->value) //150
+			{
+				other->client->pers.max_rounds = cs_bandolier_ammo_rounds->value; //150
+			}
 		}
 	}
 
@@ -405,9 +528,9 @@ Pickup_Pack(edict_t *ent, edict_t *other)
 		other->client->pers.max_slugs = 100;
 	}
 
-	if (other->client->pers.max_flechettes < 200)
+	if (other->client->pers.max_flechettes < 300)
 	{
-		other->client->pers.max_flechettes = 200;
+		other->client->pers.max_flechettes = 300;
 	}
 
 	if (g_disruptor->value)
@@ -415,6 +538,62 @@ Pickup_Pack(edict_t *ent, edict_t *other)
 		if (other->client->pers.max_rounds < 200)
 		{
 			other->client->pers.max_rounds = 200;
+		}
+	}
+
+	if (sv_custom_settings->value)
+	{
+		if (other->client->pers.max_shells < cs_ammopack_ammo_shells->value) //200
+		{
+			other->client->pers.max_shells = cs_ammopack_ammo_shells->value; //200
+		}
+
+		if (other->client->pers.max_bullets < cs_ammopack_ammo_bullets->value) //300
+		{
+			other->client->pers.max_bullets = cs_ammopack_ammo_bullets->value; //300
+		}
+
+		if (other->client->pers.max_grenades < cs_ammopack_ammo_grenades->value) //100
+		{
+			other->client->pers.max_grenades = cs_ammopack_ammo_grenades->value; //100
+		}
+
+		if (other->client->pers.max_rockets < cs_ammopack_ammo_rockets->value) //100
+		{
+			other->client->pers.max_rockets = cs_ammopack_ammo_rockets->value; //100
+		}
+  
+		if (other->client->pers.max_slugs < cs_ammopack_ammo_slugs->value) //100
+		{
+			other->client->pers.max_slugs = cs_ammopack_ammo_slugs->value; //100
+		}
+		
+		if (other->client->pers.max_cells < cs_ammopack_ammo_cells->value) //300
+		{
+			other->client->pers.max_cells = cs_ammopack_ammo_cells->value; //300
+		}
+		
+		if (other->client->pers.max_flechettes < cs_ammopack_ammo_flechettes->value) //300
+		{
+			other->client->pers.max_flechettes = cs_ammopack_ammo_flechettes->value; //300
+		}
+
+		if (g_disruptor->value)
+		{
+			if (other->client->pers.max_rounds < cs_ammopack_ammo_rounds->value) //200
+			{
+				other->client->pers.max_rounds = cs_ammopack_ammo_rounds->value; //200
+			}
+		}
+		
+		if (other->client->pers.max_prox < cs_ammopack_ammo_prox->value) //50
+		{
+			other->client->pers.max_prox = cs_ammopack_ammo_prox->value; //50
+		}
+		
+		if (other->client->pers.max_tesla < cs_ammopack_ammo_tesla->value) //50
+		{
+			other->client->pers.max_tesla = cs_ammopack_ammo_tesla->value; //50
 		}
 	}
 
@@ -591,14 +770,20 @@ Use_IR(edict_t *ent, gitem_t *item)
 
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
+	
+	int IR_duration = 600;
+	if (sv_custom_settings->value)
+	{
+		IR_duration = cs_IR_duration->value; //600
+	}	
 
 	if (ent->client->ir_framenum > level.framenum)
 	{
-		ent->client->ir_framenum += 600;
+		ent->client->ir_framenum += IR_duration; //600
 	}
 	else
 	{
-		ent->client->ir_framenum = level.framenum + 600;
+		ent->client->ir_framenum = level.framenum + IR_duration; //600
 	}
 
 	gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/ir_start.wav"), 1, ATTN_NORM, 0);
@@ -609,14 +794,20 @@ Use_Double(edict_t *ent, gitem_t *item)
 {
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
+	
+	int double_duration = 300;
+	if (sv_custom_settings->value)
+	{
+		double_duration = cs_double_duration->value; //300
+	}
 
 	if (ent->client->double_framenum > level.framenum)
 	{
-		ent->client->double_framenum += 300;
+		ent->client->double_framenum += double_duration; //300
 	}
 	else
 	{
-		ent->client->double_framenum = level.framenum + 300;
+		ent->client->double_framenum = level.framenum + double_duration; //300
 	}
 
 	gi.sound(ent, CHAN_ITEM, gi.soundindex("misc/ddamage1.wav"), 1, ATTN_NORM, 0);
@@ -747,9 +938,25 @@ Pickup_Sphere(edict_t *ent, edict_t *other)
 	}
 
 	quantity = other->client->pers.inventory[ITEM_INDEX(ent->item)];
+	
+	int iMediumMax = 2;
+	int iHardMax = 1;
+	if (sv_custom_settings->value)
+	{
+		if (((skill->value == SKILL_EASY) && (quantity >= cs_powerup_quantity_easy->value)) || 
+			((skill->value == SKILL_MEDIUM) && (quantity >= cs_powerup_quantity_medium->value)) || 
+			((skill->value == SKILL_HARD) && (quantity >= cs_powerup_quantity_hard->value)) || 
+			((skill->value == SKILL_HARDPLUS) && (quantity >= cs_powerup_quantity_hardplus->value)))
+		{
+			return false;
+		}
+		
+		iMediumMax = cs_powerup_quantity_medium->value;
+		iHardMax = cs_powerup_quantity_hard->value;
+	}
 
 	if (((skill->value == SKILL_MEDIUM) &&
-		 (quantity >= 2)) || ((skill->value >= SKILL_HARD) && (quantity >= 1)))
+		 (quantity >= iMediumMax)) || ((skill->value >= SKILL_HARD) && (quantity >= iHardMax)))
 	{
 		return false;
 	}
@@ -846,6 +1053,13 @@ Use_Quad(edict_t *ent, gitem_t *item)
 
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
+	
+	int quad_duration = 300;
+	if (sv_custom_settings->value)
+	{
+		quad_duration = cs_quad_duration->value; //300
+	}	
+	
 
 	if (quad_drop_timeout_hack)
 	{
@@ -854,7 +1068,7 @@ Use_Quad(edict_t *ent, gitem_t *item)
 	}
 	else
 	{
-		timeout = 300;
+		timeout = quad_duration; //300
 	}
 
 	if (ent->client->quad_framenum > level.framenum)
@@ -882,14 +1096,20 @@ Use_Breather(edict_t *ent, gitem_t *item)
 
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
+	
+	int rebreather_duration = 300;
+	if (sv_custom_settings->value)
+	{
+		rebreather_duration = cs_rebreather_duration->value; //300
+	}	
 
 	if (ent->client->breather_framenum > level.framenum)
 	{
-		ent->client->breather_framenum += 300;
+		ent->client->breather_framenum += rebreather_duration; //300
 	}
 	else
 	{
-		ent->client->breather_framenum = level.framenum + 300;
+		ent->client->breather_framenum = level.framenum + rebreather_duration; //300
 	}
 }
 
@@ -905,14 +1125,20 @@ Use_Envirosuit(edict_t *ent, gitem_t *item)
 
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
+	
+	int environmentsuit_duration = 300;
+	if (sv_custom_settings->value)
+	{
+		environmentsuit_duration = cs_environmentsuit_duration->value; //300
+	}	
 
 	if (ent->client->enviro_framenum > level.framenum)
 	{
-		ent->client->enviro_framenum += 300;
+		ent->client->enviro_framenum += environmentsuit_duration; //300
 	}
 	else
 	{
-		ent->client->enviro_framenum = level.framenum + 300;
+		ent->client->enviro_framenum = level.framenum + environmentsuit_duration; //300
 	}
 }
 
@@ -929,13 +1155,19 @@ Use_Invulnerability(edict_t *ent, gitem_t *item)
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
 
+	int invulnerability_duration = 300;
+	if (sv_custom_settings->value)
+	{
+		invulnerability_duration = cs_invulnerability_duration->value; //300
+	}
+
 	if (ent->client->invincible_framenum > level.framenum)
 	{
-		ent->client->invincible_framenum += 300;
+		ent->client->invincible_framenum += invulnerability_duration; //300
 	}
 	else
 	{
-		ent->client->invincible_framenum = level.framenum + 300;
+		ent->client->invincible_framenum = level.framenum + invulnerability_duration; //300
 	}
 
 	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/protect.wav"), 1, ATTN_NORM, 0);
@@ -950,10 +1182,16 @@ Use_Silencer(edict_t *ent, gitem_t *item)
 	{
 		return;
 	}
+	
+	int silencer_shots_quantity = 30;
+	if (sv_custom_settings->value)
+	{
+		silencer_shots_quantity = cs_silencer_shots_quantity->value; //30
+	}
 
 	ent->client->pers.inventory[ITEM_INDEX(item)]--;
 	ValidateSelectedItem(ent);
-	ent->client->silencer_shots += 30;
+	ent->client->silencer_shots += silencer_shots_quantity; //30
 }
 
 /* ====================================================================== */
@@ -1178,6 +1416,11 @@ MegaHealth_think(edict_t *self)
 	{
 		return;
 	}
+	
+	if (sv_custom_settings->value && !cs_health_mega_decay->value)
+	{
+		return;
+	}	
 
 	if (self->owner->health > self->owner->max_health)
 	{
@@ -1204,7 +1447,7 @@ Pickup_Health(edict_t *ent, edict_t *other)
 		return false;
 	}
 
-	if (!(ent->style & HEALTH_IGNORE_MAX))
+	if (!(ent->style & HEALTH_IGNORE_MAX) || (sv_custom_settings->value && cs_player_health_force_max->value) )
 	{
 		if (other->health >= other->max_health)
 		{
@@ -1214,7 +1457,7 @@ Pickup_Health(edict_t *ent, edict_t *other)
 
 	other->health += ent->count;
 
-	if (!(ent->style & HEALTH_IGNORE_MAX))
+	if (!(ent->style & HEALTH_IGNORE_MAX) || (sv_custom_settings->value && cs_player_health_force_max->value) )
 	{
 		if (other->health > other->max_health)
 		{
@@ -1295,81 +1538,192 @@ Pickup_Armor(edict_t *ent, edict_t *other)
 
 	old_armor_index = ArmorIndex(other);
 
-	/* handle armor shards specially */
-	if (ent->item->tag == ARMOR_SHARD)
+	if (sv_custom_settings->value)
 	{
-		if (!old_armor_index)
+		/* handle armor shards specially */
+		if (ent->item->tag == ARMOR_SHARD)
 		{
-			other->client->pers.inventory[jacket_armor_index] = 2;
+			if (!old_armor_index)
+			{
+				other->client->pers.inventory[jacket_armor_index] = cs_armor_shard_val->value; //2
+				if (cs_player_armor_cap->value && other->client->pers.inventory[jacket_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[jacket_armor_index] = cs_player_armor_cap->value;
+				}
+			}
+			else
+			{
+				other->client->pers.inventory[old_armor_index] += cs_armor_shard_val->value; //2
+				if (cs_player_armor_cap->value && other->client->pers.inventory[old_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[old_armor_index] = cs_player_armor_cap->value;
+				}
+			}
 		}
-		else
+		else if (ent->item->tag == ARMOR_JACKET) /* handle jacket armor */
 		{
-			other->client->pers.inventory[old_armor_index] += 2;
+			if (!old_armor_index)
+			{
+				other->client->pers.inventory[jacket_armor_index] = cs_armor_jacket_val->value; //25
+				if (cs_player_armor_cap->value && other->client->pers.inventory[jacket_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[jacket_armor_index] = cs_player_armor_cap->value;
+				}
+			}
+			else
+			{
+				other->client->pers.inventory[old_armor_index] += cs_armor_jacket_val->value; //25
+				if (cs_player_armor_cap->value && other->client->pers.inventory[old_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[old_armor_index] = cs_player_armor_cap->value;
+				}
+			}
+		}
+		else if (ent->item->tag == ARMOR_COMBAT) /* handle combat armor */
+		{
+			if (!old_armor_index)
+			{
+				other->client->pers.inventory[combat_armor_index] = cs_armor_combat_val->value; //50
+				if (cs_player_armor_cap->value && other->client->pers.inventory[combat_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[combat_armor_index] = cs_player_armor_cap->value;
+				}
+			}
+			else
+			{
+				other->client->pers.inventory[old_armor_index] += cs_armor_combat_val->value; //50
+				if (cs_player_armor_cap->value && other->client->pers.inventory[old_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[old_armor_index] = cs_player_armor_cap->value;
+				}
+
+				if (other->client->pers.inventory[jacket_armor_index])
+				{
+					other->client->pers.inventory[combat_armor_index] = other->client->pers.inventory[jacket_armor_index];
+					other->client->pers.inventory[jacket_armor_index] = 0;
+				}				
+			}
+		}
+		else if (ent->item->tag == ARMOR_BODY) /* handle body armor */
+		{
+			if (!old_armor_index)
+			{
+				other->client->pers.inventory[body_armor_index] = cs_armor_body_val->value; //100
+				if (cs_player_armor_cap->value && other->client->pers.inventory[body_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[body_armor_index] = cs_player_armor_cap->value;
+				}
+			}
+			else
+			{
+				other->client->pers.inventory[old_armor_index] += cs_armor_body_val->value; //100
+				if (cs_player_armor_cap->value && other->client->pers.inventory[old_armor_index] > cs_player_armor_cap->value)
+				{
+					other->client->pers.inventory[old_armor_index] = cs_player_armor_cap->value;
+				}
+				
+				if (other->client->pers.inventory[jacket_armor_index])
+				{
+					other->client->pers.inventory[body_armor_index] = other->client->pers.inventory[jacket_armor_index];
+					other->client->pers.inventory[jacket_armor_index] = 0;
+				}	
+				else if (other->client->pers.inventory[combat_armor_index])
+				{
+					other->client->pers.inventory[body_armor_index] = other->client->pers.inventory[combat_armor_index];
+					other->client->pers.inventory[combat_armor_index] = 0;
+				}				
+			}
+		}
+		/* handle max armor */
+		if (other->client->pers.inventory[jacket_armor_index] && other->client->pers.inventory[jacket_armor_index] > cs_armor_jacket_max->value && (ent->item->tag != ARMOR_SHARD || cs_player_armor_force_max->value) )
+		{
+			other->client->pers.inventory[jacket_armor_index] = cs_armor_jacket_max->value;
+		}
+		else if (other->client->pers.inventory[combat_armor_index] && other->client->pers.inventory[combat_armor_index] > cs_armor_combat_max->value && (ent->item->tag != ARMOR_SHARD || cs_player_armor_force_max->value) )
+		{
+			other->client->pers.inventory[combat_armor_index] = cs_armor_combat_max->value;
+		}
+		else if (other->client->pers.inventory[body_armor_index] && other->client->pers.inventory[body_armor_index] > cs_armor_body_max->value && (ent->item->tag != ARMOR_SHARD || cs_player_armor_force_max->value) )
+		{
+			other->client->pers.inventory[body_armor_index] = cs_armor_body_max->value;
 		}
 	}
-
-	/* if player has no armor, just use it */
-	else if (!old_armor_index)
-	{
-		other->client->pers.inventory[ITEM_INDEX(ent->item)] =
-			newinfo->base_count;
-	}
-
-	/* use the better armor */
 	else
 	{
-		/* get info on old armor */
-		if (old_armor_index == jacket_armor_index)
+		/* handle armor shards specially */
+		if (ent->item->tag == ARMOR_SHARD)
 		{
-			oldinfo = &jacketarmor_info;
-		}
-		else if (old_armor_index == combat_armor_index)
-		{
-			oldinfo = &combatarmor_info;
-		}
-		else
-		{
-			oldinfo = &bodyarmor_info;
-		}
-
-		if (newinfo->normal_protection > oldinfo->normal_protection)
-		{
-			/* calc new armor values */
-			salvage = oldinfo->normal_protection / newinfo->normal_protection;
-			salvagecount = salvage * other->client->pers.inventory[old_armor_index];
-			newcount = newinfo->base_count + salvagecount;
-
-			if (newcount > newinfo->max_count)
+			if (!old_armor_index)
 			{
-				newcount = newinfo->max_count;
+				other->client->pers.inventory[jacket_armor_index] = 2;
+			}
+			else
+			{
+				other->client->pers.inventory[old_armor_index] += 2;
+			}
+		}
+		else if (!old_armor_index) /* if player has no armor, just use it */
+		{
+			other->client->pers.inventory[ITEM_INDEX(ent->item)] =
+				newinfo->base_count;
+		}
+		else /* use the better armor */
+		{
+			/* get info on old armor */
+			if (old_armor_index == jacket_armor_index)
+			{
+				oldinfo = &jacketarmor_info;
+			}
+			else if (old_armor_index == combat_armor_index)
+			{
+				oldinfo = &combatarmor_info;
+			}
+			else
+			{
+				oldinfo = &bodyarmor_info;
 			}
 
-			/* zero count of old armor so it goes away */
-			other->client->pers.inventory[old_armor_index] = 0;
-
-			/* change armor to new item with computed value */
-			other->client->pers.inventory[ITEM_INDEX(ent->item)] = newcount;
-		}
-		else
-		{
-			/* calc new armor values */
-			salvage = newinfo->normal_protection / oldinfo->normal_protection;
-			salvagecount = salvage * newinfo->base_count;
-			newcount = other->client->pers.inventory[old_armor_index] + salvagecount;
-
-			if (newcount > oldinfo->max_count)
+			if (newinfo->normal_protection > oldinfo->normal_protection)
 			{
-				newcount = oldinfo->max_count;
-			}
+				/* calc new armor values */
+				salvage = oldinfo->normal_protection / newinfo->normal_protection;
+				salvagecount = salvage *
+							other->client->pers.inventory[old_armor_index];
+				newcount = newinfo->base_count + salvagecount;
 
-			/* if we're already maxed out then we don't need the new armor */
-			if (other->client->pers.inventory[old_armor_index] >= newcount)
+				if (newcount > newinfo->max_count)
+				{
+					newcount = newinfo->max_count;
+				}
+
+				/* zero count of old armor so it goes away */
+				other->client->pers.inventory[old_armor_index] = 0;
+
+				/* change armor to new item with computed value */
+				other->client->pers.inventory[ITEM_INDEX(ent->item)] = newcount;
+			}
+			else
 			{
-				return false;
-			}
+				/* calc new armor values */
+				salvage = newinfo->normal_protection / oldinfo->normal_protection;
+				salvagecount = salvage * newinfo->base_count;
+				newcount = other->client->pers.inventory[old_armor_index] +
+						salvagecount;
 
-			/* update current armor value */
-			other->client->pers.inventory[old_armor_index] = newcount;
+				if (newcount > oldinfo->max_count)
+				{
+					newcount = oldinfo->max_count;
+				}
+
+				/* if we're already maxed out then we don't need the new armor */
+				if (other->client->pers.inventory[old_armor_index] >= newcount)
+				{
+					return false;
+				}
+
+				/* update current armor value */
+				other->client->pers.inventory[old_armor_index] = newcount;
+			}
 		}
 	}
 
@@ -1419,6 +1773,11 @@ Use_PowerArmor(edict_t *ent, gitem_t *item)
 {
 	int index;
 
+	if (!ent || !item)
+	{
+		return;
+	}
+	
 	if (ent->flags & FL_POWER_ARMOR)
 	{
 		ent->flags &= ~FL_POWER_ARMOR;
@@ -1513,6 +1872,73 @@ Touch_Item(edict_t *ent, edict_t *other, cplane_t *plane /* unused */, csurface_
 	{
 		return; /* not a grabbable item? */
 	}
+	
+	if (sv_custom_settings->value && cs_player_health_cap->value && other->health == cs_player_health_cap->value && ent->item->pickup == Pickup_Health)
+	{
+		return; /* health cap reached */
+	}
+	
+	if (sv_custom_settings->value && cs_player_health_cap->value && other->health == cs_player_health_cap->value && ent->item->pickup == Pickup_Adrenaline)
+	{
+		return; /* health cap reached */
+	}
+	
+	if (sv_custom_settings->value && cs_player_health_cap->value && other->health == cs_player_health_cap->value && ent->item->pickup == Pickup_AncientHead)
+	{
+		return; /* health cap reached */
+	}
+
+	if (sv_custom_settings->value && cs_player_armor_cap->value)
+	{
+		int old_armor_index = ArmorIndex(other);
+		if (old_armor_index)
+		{
+			gitem_t *armor;
+			armor = GetItemByIndex(old_armor_index);
+			//int teste = ceil(((gitem_armor_t *)armor->info)->energy_protection * 10);
+			int testp = ceil(((gitem_armor_t *)armor->info)->normal_protection * 10);
+			int max_armor = 0;
+	
+			if (testp == 3)
+			{
+				max_armor = cs_armor_jacket_max->value;
+			}
+			else if (testp == 6)
+			{
+				max_armor = cs_armor_combat_max->value;
+			}
+			else if (testp == 8)
+			{
+				max_armor = cs_armor_body_max->value;
+			}
+		
+			if (testp == 3 && ent->item->tag == ARMOR_COMBAT)
+			{
+				max_armor = cs_armor_combat_max->value;
+			}
+		
+			if (testp == 3 && ent->item->tag == ARMOR_BODY)
+			{
+				max_armor = cs_armor_body_max->value;
+			}
+		
+			if (testp == 6 && ent->item->tag == ARMOR_BODY)
+			{
+				max_armor = cs_armor_body_max->value;
+			}
+	
+			if (other->client->pers.inventory[old_armor_index] >= max_armor)
+			{
+				if (ent->item->tag == ARMOR_JACKET || ent->item->tag == ARMOR_COMBAT || ent->item->tag == ARMOR_BODY || cs_player_armor_force_max->value)
+				{
+					if (ent->item->pickup == Pickup_Armor) //fix a bug that forbids to pick up items if armor is maxed
+					{
+						return; /* armor cap reached */
+					}
+				}
+			}
+		}
+	}
 
 	taken = ent->item->pickup(ent, other);
 
@@ -1532,29 +1958,46 @@ Touch_Item(edict_t *ent, edict_t *other, cplane_t *plane /* unused */, csurface_
 			other->client->pers.selected_item =
 				other->client->ps.stats[STAT_SELECTED_ITEM] = ITEM_INDEX(ent->item);
 		}
+		
+		int health_small_val = 2;
+		int health_val = 10;
+		int health_large_val = 25;
+		//int health_mega_val = 100;
+		if (sv_custom_settings->value)
+		{
+			health_small_val = cs_health_small_val->value; //2
+			health_val = cs_health_val->value; //10
+			health_large_val = cs_health_large_val->value; //25
+			//health_mega_val = cs_health_mega_val->value; //100			
+		}		
 
 		if (ent->item->pickup == Pickup_Health)
 		{
-			if (ent->count == 2)
+			if (ent->count == health_small_val)
 			{
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/s_health.wav"), 1, ATTN_NORM, 0);
+				gi.sound(other, CHAN_ITEM, gi.soundindex(
+								"items/s_health.wav"), 1, ATTN_NORM, 0);
 			}
-			else if (ent->count == 10)
+			else if (ent->count == health_val)
 			{
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/n_health.wav"), 1, ATTN_NORM, 0);
+				gi.sound(other, CHAN_ITEM, gi.soundindex(
+								"items/n_health.wav"), 1, ATTN_NORM, 0);
 			}
-			else if (ent->count == 25)
+			else if (ent->count == health_large_val)
 			{
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/l_health.wav"), 1, ATTN_NORM, 0);
+				gi.sound(other, CHAN_ITEM, gi.soundindex(
+								"items/l_health.wav"), 1, ATTN_NORM, 0);
 			}
-			else /* (ent->count == 100) */
+			else /* (ent->count == health_mega_val) //100 */
 			{
-				gi.sound(other, CHAN_ITEM, gi.soundindex("items/m_health.wav"), 1, ATTN_NORM, 0);
+				gi.sound(other, CHAN_ITEM, gi.soundindex(
+								"items/m_health.wav"), 1, ATTN_NORM, 0);
 			}
 		}
 		else if (ent->item->pickup_sound)
 		{
-			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
+			gi.sound(other, CHAN_ITEM, gi.soundindex(
+							ent->item->pickup_sound), 1, ATTN_NORM, 0);
 		}
 
 		/* activate item instantly if appropriate */
@@ -3507,9 +3950,15 @@ SP_item_health(edict_t *self)
 		G_FreeEdict(self);
 		return;
 	}
+	
+	int health_val = 10;
+	if (sv_custom_settings->value)
+	{
+		health_val = cs_health_val->value; //10			
+	}
 
 	self->model = "models/items/healing/medium/tris.md2";
-	self->count = 10;
+	self->count = health_val; //10
 	SpawnItem(self, FindItem("Health"));
 	gi.soundindex("items/n_health.wav");
 }
@@ -3530,9 +3979,15 @@ SP_item_health_small(edict_t *self)
 		G_FreeEdict(self);
 		return;
 	}
+	
+	int health_small_val = 2;
+	if (sv_custom_settings->value)
+	{
+		health_small_val = cs_health_small_val->value; //2			
+	}
 
 	self->model = "models/items/healing/stimpack/tris.md2";
-	self->count = 2;
+	self->count = health_small_val; //2
 	SpawnItem(self, FindItem("Health"));
 	self->style = HEALTH_IGNORE_MAX;
 	gi.soundindex("items/s_health.wav");
@@ -3554,9 +4009,15 @@ SP_item_health_large(edict_t *self)
 		G_FreeEdict(self);
 		return;
 	}
+	
+	int health_large_val = 25;
+	if (sv_custom_settings->value)
+	{
+		health_large_val = cs_health_large_val->value; //25			
+	}
 
 	self->model = "models/items/healing/large/tris.md2";
-	self->count = 25;
+	self->count = health_large_val; //25
 	SpawnItem(self, FindItem("Health"));
 	gi.soundindex("items/l_health.wav");
 }
@@ -3577,9 +4038,15 @@ SP_item_health_mega(edict_t *self)
 		G_FreeEdict(self);
 		return;
 	}
+	
+	int health_mega_val = 100;
+	if (sv_custom_settings->value)
+	{
+		health_mega_val = cs_health_mega_val->value; //100			
+	}
 
 	self->model = "models/items/mega_h/tris.md2";
-	self->count = 100;
+	self->count = health_mega_val; //100
 	SpawnItem(self, FindItem("Health"));
 	gi.soundindex("items/m_health.wav");
 	self->style = HEALTH_IGNORE_MAX | HEALTH_TIMED;
