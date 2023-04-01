@@ -864,6 +864,16 @@ weapon_grenade_fire(edict_t *ent, qboolean held)
 	}
 
 	radius = damage + 40;
+	
+	int weapon_grenade_hand_speed_min = GRENADE_MINSPEED;
+	int weapon_grenade_hand_speed_max = GRENADE_MAXSPEED;
+	if(sv_custom_settings->value)
+	{
+		damage = cs_weapon_grenade_hand_damage_direct->value;
+		radius = cs_weapon_grenade_hand_damage_radius->value;
+		weapon_grenade_hand_speed_min = cs_weapon_grenade_hand_speed_min->value;
+		weapon_grenade_hand_speed_max = cs_weapon_grenade_hand_speed_max->value;
+	}
 
 	if (is_quad)
 	{
@@ -894,7 +904,8 @@ weapon_grenade_fire(edict_t *ent, qboolean held)
 			forward, right, up, start);
 
 	timer = ent->client->grenade_time - level.time;
-	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
+	speed = weapon_grenade_hand_speed_min + (GRENADE_TIMER - timer) *
+		((weapon_grenade_hand_speed_max - weapon_grenade_hand_speed_min) / GRENADE_TIMER);
 
 	if (speed > GRENADE_MAXSPEED)
 	{
@@ -1140,7 +1151,7 @@ weapon_grenadelauncher_fire(edict_t *ent)
 	vec3_t offset;
 	vec3_t forward, right;
 	vec3_t start;
-	int damage;
+	int damage = 120;
 	float radius;
 
 	if (!ent)
@@ -1159,7 +1170,20 @@ weapon_grenadelauncher_fire(edict_t *ent)
 	}
 
 	radius = damage + 40;
-
+	
+	int speed = 600;
+	if(sv_custom_settings->value)
+	{
+		damage = cs_weapon_grenade_launcher_damage_direct->value;
+		radius = cs_weapon_grenade_launcher_damage_radius->value;
+		speed = cs_weapon_grenade_launcher_speed->value;
+		
+		if (ent->client->pers.weapon->tag == AMMO_PROX)
+		{
+			damage = cs_weapon_grenade_launcher_damage_direct_p->value;
+		}
+	}
+	
 	if (is_quad)
 	{
 		damage *= damage_multiplier;
@@ -1175,10 +1199,10 @@ weapon_grenadelauncher_fire(edict_t *ent)
 	switch (ent->client->pers.weapon->tag)
 	{
 		case AMMO_PROX:
-			fire_prox(ent, start, forward, damage_multiplier, 600);
+			fire_prox(ent, start, forward, damage_multiplier, speed);
 			break;
 		default:
-			fire_grenade(ent, start, forward, damage, 600, 2.5, radius);
+			fire_grenade(ent, start, forward, damage, speed, 2.5, radius);
 			break;
 	}
 
@@ -1252,6 +1276,15 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 	damage = 100 + (int)(random() * 20.0);
 	radius_damage = 120;
 	damage_radius = 120;
+	
+	int weapon_rocket_launcher_speed = 650;
+	if (sv_custom_settings->value)
+	{
+		damage = cs_weapon_rocket_launcher_damage_direct->value;
+		radius_damage = cs_weapon_rocket_launcher_damage_radius->value;
+		damage_radius = cs_weapon_rocket_launcher_radius->value;
+		weapon_rocket_launcher_speed = cs_weapon_rocket_launcher_speed->value;
+	}
 
 	if (is_quad)
 	{
@@ -1266,7 +1299,7 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 
 	VectorSet(offset, 8, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
-	fire_rocket(ent, start, forward, damage, 650, damage_radius, radius_damage);
+	fire_rocket(ent, start, forward, damage, weapon_rocket_launcher_speed, damage_radius, radius_damage);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -1319,6 +1352,35 @@ Blaster_Fire(edict_t *ent, vec3_t g_offset, int damage,
 	{
 		return;
 	}
+	
+	int speed = 1000;
+	if (sv_custom_settings->value)
+	{
+		if(!hyper)
+		{
+			if (deathmatch->value)
+			{
+				damage = cs_weapon_blaster_damage_mp->value;
+			}
+			else
+			{
+				damage = cs_weapon_blaster_damage_sp->value;
+			}
+			speed = cs_weapon_blaster_speed->value;
+		}
+		else
+		{
+			if (deathmatch->value)
+			{
+				damage = cs_weapon_hblaster_damage_mp->value;
+			}
+			else
+			{
+				damage = cs_weapon_hblaster_damage_sp->value;
+			}
+			speed = cs_weapon_hblaster_speed->value;
+		}
+	}
 
 	if (is_quad)
 	{
@@ -1333,7 +1395,7 @@ Blaster_Fire(edict_t *ent, vec3_t g_offset, int damage,
 	VectorScale(forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster(ent, start, forward, damage, 1000, effect, hyper);
+	fire_blaster(ent, start, forward, damage, speed, effect, hyper);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -1553,6 +1615,18 @@ Machinegun_Fire(edict_t *ent)
 		NoAmmoWeaponChange(ent);
 		return;
 	}
+	
+	int hspread = DEFAULT_BULLET_HSPREAD; //300
+	int vspread = DEFAULT_BULLET_VSPREAD; //500
+	float recoil = -1.5;
+	if (sv_custom_settings->value)
+	{
+		damage = cs_weapon_machinegun_damage->value;
+		kick = cs_weapon_machinegun_kick->value;
+		hspread = cs_weapon_machinegun_hspread->value;
+		vspread = cs_weapon_machinegun_vspread->value;
+		recoil = cs_weapon_machinegun_recoil->value;
+	}
 
 	if (is_quad)
 	{
@@ -1567,7 +1641,7 @@ Machinegun_Fire(edict_t *ent)
 	}
 
 	ent->client->kick_origin[0] = crandom() * 0.35;
-	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
+	ent->client->kick_angles[0] = ent->client->machinegun_shots * recoil;
 
 	/* raise the gun as it is firing */
 	if (!(deathmatch->value || g_machinegun_norecoil->value))
@@ -1585,8 +1659,8 @@ Machinegun_Fire(edict_t *ent)
 	AngleVectors(angles, forward, right, NULL);
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
-	fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD,
-			DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+	fire_bullet(ent, start, forward, damage, kick, hspread,
+			vspread, MOD_MACHINEGUN);
 
 	gi.WriteByte(svc_muzzleflash);
 	gi.WriteShort(ent - g_edicts);
@@ -1737,6 +1811,23 @@ Chaingun_Fire(edict_t *ent)
 		NoAmmoWeaponChange(ent);
 		return;
 	}
+	
+	int hspread = DEFAULT_BULLET_HSPREAD; //300
+	int vspread = DEFAULT_BULLET_VSPREAD; //500
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_chaingun_damage_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_chaingun_damage_sp->value;
+		}
+		kick = cs_weapon_chaingun_kick->value;
+		hspread = cs_weapon_chaingun_hspread->value;
+		vspread = cs_weapon_chaingun_vspread->value;
+	}
 
 	if (is_quad)
 	{
@@ -1759,8 +1850,8 @@ Chaingun_Fire(edict_t *ent)
 		VectorSet(offset, 0, r, u + ent->viewheight - 8);
 		P_ProjectSource(ent, offset, forward, right, start);
 
-		fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD,
-				DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
+		fire_bullet(ent, start, forward, damage, kick, hspread,
+				vspread, MOD_CHAINGUN);
 	}
 
 	/* send muzzle flash */
@@ -1827,15 +1918,27 @@ weapon_shotgun_fire(edict_t *ent)
 
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
-
+	
+	int weapon_shotgun_bullets = DEFAULT_SHOTGUN_COUNT; //12
+	int hspread = DEFAULT_SHOTGUN_HSPREAD; //1000
+	int vspread = DEFAULT_SHOTGUN_VSPREAD; //500
+	if (sv_custom_settings->value)
+	{
+		weapon_shotgun_bullets = cs_weapon_shotgun_bullets->value;
+		damage = cs_weapon_shotgun_damage->value;
+		kick = cs_weapon_shotgun_kick->value;
+		hspread = cs_weapon_shotgun_hspread->value;
+		vspread = cs_weapon_shotgun_vspread->value;
+	}
+	
 	if (is_quad)
 	{
 		damage *= damage_multiplier;
 		kick *= damage_multiplier;
 	}
 
-	fire_shotgun(ent, start, forward, damage, kick, 500, 500,
-		DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+	fire_shotgun(ent, start, forward, damage, kick, hspread, vspread,
+		weapon_shotgun_bullets, MOD_SHOTGUN);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -1889,6 +1992,20 @@ weapon_supershotgun_fire(edict_t *ent)
 
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
+	
+	int weapon_sshotgun_bullets = DEFAULT_SSHOTGUN_COUNT; //20
+	int hspread = DEFAULT_SHOTGUN_HSPREAD; //1000
+	int vspread = DEFAULT_SHOTGUN_VSPREAD; //500
+	int yaw = 5;
+	if (sv_custom_settings->value)
+	{
+		weapon_sshotgun_bullets = cs_weapon_sshotgun_bullets->value;
+		damage = cs_weapon_sshotgun_damage->value;
+		kick = cs_weapon_sshotgun_kick->value;
+		hspread = cs_weapon_sshotgun_hspread->value;
+		vspread = cs_weapon_sshotgun_vspread->value;
+		yaw = cs_weapon_sshotgun_yaw->value;
+	}
 
 	if (is_quad)
 	{
@@ -1897,7 +2014,7 @@ weapon_supershotgun_fire(edict_t *ent)
 	}
 
 	v[PITCH] = ent->client->v_angle[PITCH];
-	v[YAW] = ent->client->v_angle[YAW] - 5;
+	v[YAW] = ent->client->v_angle[YAW] - yaw;
 	v[ROLL] = ent->client->v_angle[ROLL];
 	AngleVectors(v, forward, NULL, NULL);
 	
@@ -1912,10 +2029,10 @@ weapon_supershotgun_fire(edict_t *ent)
 		P_ProjectSource(ent, offset, forward, right, start);
 	}	
 	
-	fire_shotgun(ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD,
-			DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+	fire_shotgun(ent, start, forward, damage, kick, hspread,
+			vspread, weapon_sshotgun_bullets / 2, MOD_SSHOTGUN);
 	
-	v[YAW] = ent->client->v_angle[YAW] + 5;
+	v[YAW] = ent->client->v_angle[YAW] + yaw;
 	AngleVectors(v, forward, NULL, NULL);
 	
 	if (aimfix->value)
@@ -1929,8 +2046,8 @@ weapon_supershotgun_fire(edict_t *ent)
 		P_ProjectSource(ent, offset, forward, right, start);
 	}	
 	
-	fire_shotgun(ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD,
-			DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+	fire_shotgun(ent, start, forward, damage, kick, hspread,
+			vspread, weapon_sshotgun_bullets / 2, MOD_SSHOTGUN);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -1994,6 +2111,20 @@ weapon_railgun_fire(edict_t *ent)
 	{
 		damage = 150;
 		kick = 250;
+	}
+	
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_railgun_damage_mp->value;
+			kick = cs_weapon_railgun_kick_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_railgun_damage_sp->value;
+			kick = cs_weapon_railgun_kick_sp->value;
+		}
 	}
 
 	if (is_quad)
@@ -2092,6 +2223,21 @@ weapon_bfg_fire(edict_t *ent)
 		ent->client->ps.gunframe++;
 		return;
 	}
+	
+	int speed = 400;
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_bfg_damage_effect_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_bfg_damage_effect_sp->value;
+		}
+		damage_radius = cs_weapon_bfg_radius->value;
+		speed = cs_weapon_bfg_speed->value;
+	}
 
 	if (is_quad)
 	{
@@ -2109,7 +2255,7 @@ weapon_bfg_fire(edict_t *ent)
 
 	VectorSet(offset, 8, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
-	fire_bfg(ent, start, forward, damage, 400, damage_radius);
+	fire_bfg(ent, start, forward, damage, speed, damage_radius);
 
 	ent->client->ps.gunframe++;
 
@@ -2157,6 +2303,20 @@ weapon_chainfist_fire(edict_t *ent)
 	{
 		damage = 30;
 	}
+	
+	int reach = 64;
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_chainfist_damage_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_chainfist_damage_sp->value;
+		}
+		reach = cs_weapon_chainfist_reach->value;
+	}
 
 	if (is_quad)
 	{
@@ -2173,8 +2333,8 @@ weapon_chainfist_fire(edict_t *ent)
 	VectorSet(offset, 0, 8, ent->viewheight - 4);
 	P_ProjectSource(ent, offset, forward, right, start);
 
-	fire_player_melee(ent, start, forward, CHAINFIST_REACH, damage,
-			100, 1, MOD_CHAINFIST);
+	fire_player_melee(ent, start, forward, reach, damage,
+			100, 1, MOD_CHAINFIST); //CHAINFIST_REACH 64
 
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
@@ -2326,6 +2486,18 @@ weapon_tracker_fire(edict_t *self)
 	{
 		damage = 45;
 	}
+	
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_disintegrator_damage_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_disintegrator_damage_sp->value;
+		}
+	}
 
 	if (is_quad)
 	{
@@ -2433,6 +2605,14 @@ weapon_etf_rifle_fire(edict_t *ent)
 		NoAmmoWeaponChange(ent);
 		return;
 	}
+	
+	int speed = 750;
+	if (sv_custom_settings->value)
+	{
+		damage = cs_weapon_etf_rifle_damage->value;
+		kick = cs_weapon_etf_rifle_kick->value;
+		speed = cs_weapon_etf_rifle_speed->value;
+	}
 
 	if (is_quad)
 	{
@@ -2461,7 +2641,7 @@ weapon_etf_rifle_fire(edict_t *ent)
 	VectorCopy(ent->s.origin, tempPt);
 	tempPt[2] += ent->viewheight;
 	P_ProjectSource2(ent, tempPt, offset, forward, right, up, start);
-	fire_flechette(ent, start, forward, damage, 750, kick);
+	fire_flechette(ent, start, forward, damage, speed, kick); //750
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -2548,6 +2728,20 @@ Heatbeam_Fire(edict_t *ent)
 
 	ent->client->ps.gunframe++;
 	ent->client->ps.gunindex = gi.modelindex("models/weapons/v_beamer2/tris.md2");
+
+	if (sv_custom_settings->value)
+	{
+		if (deathmatch->value)
+		{
+			damage = cs_weapon_heatbeam_damage_mp->value;
+			kick = cs_weapon_heatbeam_kick_mp->value;
+		}
+		else
+		{
+			damage = cs_weapon_heatbeam_damage_sp->value;
+			kick = cs_weapon_heatbeam_kick_sp->value;
+		}
+	}
 
 	if (is_quad)
 	{
