@@ -558,24 +558,34 @@ TurretFire(edict_t *self)
 		VectorNormalize(dir);
 		trace = gi.trace(start, vec3_origin, vec3_origin, end, self, MASK_SHOT);
 
+		int var_monster_turret_blaster_damage = 20;
+		int var_monster_turret_machinegun_damage = 4;
+		int var_monster_turret_rocket_damage = 50;
+		if (sv_custom_settings->value)
+		{
+			var_monster_turret_blaster_damage = cs_monster_turret_blaster_damage->value;
+			var_monster_turret_machinegun_damage = cs_monster_turret_machinegun_damage->value;
+			var_monster_turret_rocket_damage = cs_monster_turret_rocket_damage->value;
+		}
+
 		if ((trace.ent == self->enemy) || (trace.ent == world))
 		{
 			if (self->spawnflags & SPAWN_BLASTER)
 			{
-				monster_fire_blaster(self, start, dir, 20, rocketSpeed,
-						MZ2_TURRET_BLASTER, EF_BLASTER);
+				monster_fire_blaster(self, start, dir, var_monster_turret_blaster_damage, rocketSpeed,
+						MZ2_TURRET_BLASTER, EF_BLASTER); //20
 			}
 			else if (self->spawnflags & SPAWN_MACHINEGUN)
 			{
-				monster_fire_bullet(self, start, dir, TURRET_BULLET_DAMAGE,
+				monster_fire_bullet(self, start, dir, var_monster_turret_machinegun_damage,
 						0, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD,
-						MZ2_TURRET_MACHINEGUN);
+						MZ2_TURRET_MACHINEGUN); //TURRET_BULLET_DAMAGE 4
 			}
 			else if (self->spawnflags & SPAWN_ROCKET)
 			{
 				if (dist * trace.fraction > 72)
 				{
-					monster_fire_rocket(self, start, dir, 50, rocketSpeed, MZ2_TURRET_ROCKET);
+					monster_fire_rocket(self, start, dir, var_monster_turret_rocket_damage, rocketSpeed, MZ2_TURRET_ROCKET); //50
 				}
 			}
 		}
@@ -1127,6 +1137,11 @@ SP_monster_turret(edict_t *self)
 
 	self->pain = turret_pain;
 	self->die = turret_die;
+	
+	if (sv_custom_settings->value)
+	{
+		self->health = cs_monster_turret_health->value;
+	}
 
 	/* map designer didn't specify weapon type. set it now. */
 	if (!(self->spawnflags & SPAWN_WEAPONCHOICE))
